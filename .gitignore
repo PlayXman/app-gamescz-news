@@ -16,8 +16,6 @@
 # next.js
 /.next/
 /out/
-
-# production
 /build
 
 # misc
@@ -42,3 +40,7 @@ next-env.d.ts
 
 # Idea
 .idea
+
+# Firebase
+.firebase
+.firebaserc
