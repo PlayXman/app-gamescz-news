@@ -19,6 +19,7 @@ export async function gamesCzRssDownloadHandler(): Promise<void> {
     attributeNamePrefix : "@_"
   });
   const xmlObj = xmlParser.parse(rssFileContent);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items: RssItem[] = xmlObj.rss.channel.item.map((item: any) => {
     return {
       title: item.title,

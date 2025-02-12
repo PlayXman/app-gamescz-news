@@ -5,7 +5,7 @@ import ItemList from "./ItemList";
 import fetchGamesCzItems from "../_utils/GamesCz";
 
 export default function GamesCzItems() {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<unknown[]>([]);
 
   useEffect(() => {
     fetchGamesCzItems().then(setItems).catch(console.error);
