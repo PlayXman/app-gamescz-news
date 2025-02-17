@@ -31,11 +31,11 @@
       "enabled": true
     },
     "singleProjectMode": true,
-    "storage": {
-      "port": 9199
+    "database": {
+      "port": 9000
     }
   },
-  "storage": {
-    "rules": "storage.rules"
+  "database": {
+    "rules": "database.rules.json"
   }
 }

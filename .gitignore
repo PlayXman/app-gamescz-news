@@ -44,3 +44,5 @@ next-env.d.ts
 # Firebase
 .firebase
 .firebaserc
+database-debug.log
+firebase-debug.log

@@ -1,9 +1,26 @@
 import {logger} from "firebase-functions";
-import {getStorage} from "firebase-admin/storage";
+import {getDatabase} from "firebase-admin/database";
 import {XMLParser} from "fast-xml-parser";
 
 const gamesCzRssUrl = "https://www.games.cz/rss2.xml";
-export const storageFilePath = "rss.json";
+/**
+ * Items from the RSS file.
+ */
+export const feedItemsDatabasePath = '/feedItems';
+/**
+ * ISO date. When the feed was last updated.
+ */
+export const feedUpdatedAtDatabasePath = '/feedUpdatedAt';
+
+export interface RssItem {
+  title: string | undefined;
+  description: string | undefined;
+  link: string | undefined;
+  /** ISO date */
+  pubDate: string | undefined;
+  /** Image url */
+  enclosure: string | undefined;
+}
 
 /**
  * Downloads the RSS file from games.cz and uploads it to Firebase Storage
@@ -25,24 +42,18 @@ export async function gamesCzRssDownloadHandler(): Promise<void> {
       title: item.title,
       link: item.link,
       description: item.description,
-      pubDate: item.pubDate,
+      pubDate: item.pubDate ? new Date(item.pubDate).toISOString() : undefined,
       enclosure: item.enclosure['@_url'],
     }
   });
   logger.debug(items);
 
-  logger.debug('Uploading RSS file to Firebase Storage');
-  const storage = getStorage();
-  const storageFile = storage.bucket().file(storageFilePath);
-  await storageFile.save(JSON.stringify(items));
+  logger.debug('Uploading RSS file to Firebase Realtime Database');
+  const database = getDatabase();
+  const feedItemsRef = database.ref(feedItemsDatabasePath);
+  await feedItemsRef.set(items);
+  const feedUpdatedAtRef = database.ref(feedUpdatedAtDatabasePath);
+  await feedUpdatedAtRef.set(new Date().toISOString());
 
   logger.log("RSS file download finished");
-}
-
-export interface RssItem {
-  title: string | undefined;
-  link: string | undefined;
-  description: string | undefined;
-  pubDate: string | undefined;
-  enclosure: string | undefined;
 }
