@@ -1,39 +1,20 @@
-const GAMES_CZ_RSS_URL = 'https://games.tiscali.cz/rss2.xml';
+import "./firebaseInit";
+import {feedItemsDatabasePath, feedUpdatedAtDatabasePath, RssItem} from "@/functions/src/GamesCzRssDownload";
+import {get, getDatabase, ref} from "firebase/database";
 
-export default async function fetchGamesCzItems(): Promise<{
-  title: string;
-  description: string | undefined;
-  link: string;
-  pubDate: string | undefined;
-  enclosureUrl: string | undefined;
-}[]> {
-  const response = await fetch(GAMES_CZ_RSS_URL, {
-    headers: {
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:135.0) Gecko/20100101 Firefox/135.0'
-    }
-  });
-  const xml = await response.text();
+/**
+ * Fetch RSS items from Firebase Realtime Database.
+ */
+export default async function fetchGamesCzItems(): Promise<{items: RssItem[]; updatedAt: Date | undefined}> {
+  const database = getDatabase();
+  const feedItemsRef = ref(database, feedItemsDatabasePath);
+  const feedUpdatedAtRef = ref(database, feedUpdatedAtDatabasePath);
 
-  console.log(xml);
+  const feedItems = await get(feedItemsRef);
+  const feedUpgradedAt = await get(feedUpdatedAtRef);
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xml, 'text/xml');
-
-  const allItems = [];
-  for(const item of doc.querySelectorAll('item')) {
-    const title = item.querySelector('title')?.textContent;
-    const link = item.querySelector('link')?.textContent;
-    if(title && link) {
-      allItems.push({
-        title,
-        description: item.querySelector('description')?.textContent ?? undefined,
-        link,
-        pubDate: item.querySelector('pubDate')?.textContent ?? undefined,
-        enclosureUrl: item.querySelector('enclosure')?.attributes?.getNamedItem('url')?.value,
-      });
-    }
+  return {
+    items: feedItems.val(),
+    updatedAt: feedUpgradedAt.exists() ? new Date(feedUpgradedAt.val()) : undefined,
   }
-
-  return allItems;
 }
