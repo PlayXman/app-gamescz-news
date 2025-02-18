@@ -1,26 +1,9 @@
 import {logger} from "firebase-functions";
 import {getDatabase} from "firebase-admin/database";
 import {XMLParser} from "fast-xml-parser";
+import {feedItemsDatabasePath, feedUpdatedAtDatabasePath, RssItem} from "./iGamesCzRss";
 
 const gamesCzRssUrl = "https://www.games.cz/rss2.xml";
-/**
- * Items from the RSS file.
- */
-export const feedItemsDatabasePath = '/feedItems';
-/**
- * ISO date. When the feed was last updated.
- */
-export const feedUpdatedAtDatabasePath = '/feedUpdatedAt';
-
-export interface RssItem {
-  title: string | undefined;
-  description: string | undefined;
-  link: string | undefined;
-  /** ISO date */
-  pubDate: string | undefined;
-  /** Image url */
-  enclosure: string | undefined;
-}
 
 /**
  * Downloads the RSS file from games.cz and uploads it to Firebase Storage
@@ -41,7 +24,7 @@ export async function gamesCzRssDownloadHandler(): Promise<void> {
     return {
       title: item.title,
       link: item.link,
-      description: item.description,
+      description: item.description?.replace(/<[^>]+>/g, ''),
       pubDate: item.pubDate ? new Date(item.pubDate).toISOString() : undefined,
       enclosure: item.enclosure['@_url'],
     }

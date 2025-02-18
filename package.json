@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev:app": "next dev --turbopack",
     "dev:emulators": "firebase emulators:start",
     "lint": "next lint",
     "build": "next build",

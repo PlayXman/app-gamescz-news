@@ -3,19 +3,29 @@
 import React, {useEffect, useState} from 'react';
 import ItemList from "./ItemList";
 import fetchGamesCzItems from "../_utils/GamesCz";
+import {RssItem} from "@/functions/src/iGamesCzRss";
+import Item from "@/app/_components/Item";
 
 export default function GamesCzItems() {
-  const [items, setItems] = useState<unknown[]>([]);
+  const [items, setItems] = useState<RssItem[]>([]);
+  // todo
+  const [updatedAt, setUpdatedAt] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
-    fetchGamesCzItems().then(setItems).catch(console.error);
+    fetchGamesCzItems()
+      .then(result => {
+        setItems(result.items);
+        setUpdatedAt(result.updatedAt);
+      })
+      .catch(console.error);
   }, []);
 
-  console.log(items);
-
   return (
-    <ItemList items={[]
-
-    } />
+    <ItemList items={items.map((value, index) => {
+      return [
+        index.toString(),
+        <Item title={value.title ?? ''} imageUrl={value.enclosure} targetUrl={value.link} description={value.description} publishedAt={value.pubDate} />
+      ]
+    })} />
   );
 }

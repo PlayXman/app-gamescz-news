@@ -1,32 +1,55 @@
 import React from 'react';
-import {Card, CardActionArea, CardContent, CardMedia, Typography} from "@mui/material";
+import {Card, CardActionArea, CardContent, CardMedia, SxProps, Typography} from "@mui/material";
+
+const rootSx: SxProps = {
+  height: '100%'
+};
+const actionAreaSx: SxProps = {
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'flex-start',
+};
 
 export default function Item({
-  title,
-  imageUrl,
-  targetUrl,
-  description
+                               title,
+                               imageUrl,
+                               targetUrl,
+                               description,
+  publishedAt
                              }: {
   title: string;
-  imageUrl: string;
-  targetUrl: string;
+  imageUrl: string | undefined;
+  targetUrl: string | undefined;
   description?: string;
+  publishedAt?: string;
 }) {
+  const publishedAtDate = publishedAt ? new Date(publishedAt) : undefined;
+
+  const handleClick = () => {
+    window.open(targetUrl, '_blank');
+    window.focus();
+  }
+
   return (
-    <Card>
-      <CardActionArea onClick={() => window.open(targetUrl, '_blank')}>
+    <Card variant="outlined" sx={rootSx}>
+      <CardActionArea sx={actionAreaSx} onClick={handleClick}>
         <CardMedia
           component="img"
           image={imageUrl}
-          alt=""
         />
         <CardContent>
-          <Typography gutterBottom variant="h5" component="div">
+          <Typography gutterBottom variant="body1">
             {title}
           </Typography>
           {Boolean(description) && (
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            <Typography variant="body2" sx={{color: 'text.secondary'}} component="p" gutterBottom>
               {description}
+            </Typography>
+          )}
+          {Boolean(publishedAtDate) && (
+            <Typography variant="caption" sx={{color: 'text.secondary'}} component="p">
+              {publishedAtDate?.toLocaleString('cs-CZ')}
             </Typography>
           )}
         </CardContent>

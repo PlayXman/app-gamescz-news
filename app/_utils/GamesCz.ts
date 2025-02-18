@@ -1,5 +1,5 @@
 import "./firebaseInit";
-import {feedItemsDatabasePath, feedUpdatedAtDatabasePath, RssItem} from "@/functions/src/GamesCzRssDownload";
+import {feedItemsDatabasePath, feedUpdatedAtDatabasePath, RssItem} from "@/functions/src/iGamesCzRss";
 import {get, getDatabase, ref} from "firebase/database";
 
 /**
