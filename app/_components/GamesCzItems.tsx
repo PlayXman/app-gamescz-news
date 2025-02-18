@@ -9,13 +9,13 @@ import Item from "@/app/_components/Item";
 export default function GamesCzItems() {
   const [items, setItems] = useState<RssItem[]>([]);
   // todo
-  const [updatedAt, setUpdatedAt] = useState<Date | undefined>(undefined);
+  // const [updatedAt, setUpdatedAt] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
     fetchGamesCzItems()
       .then(result => {
         setItems(result.items);
-        setUpdatedAt(result.updatedAt);
+        // setUpdatedAt(result.updatedAt);
       })
       .catch(console.error);
   }, []);
@@ -24,7 +24,7 @@ export default function GamesCzItems() {
     <ItemList items={items.map((value, index) => {
       return [
         index.toString(),
-        <Item title={value.title ?? ''} imageUrl={value.enclosure} targetUrl={value.link} description={value.description} publishedAt={value.pubDate} />
+        <Item key={index} title={value.title ?? ''} imageUrl={value.enclosure} targetUrl={value.link} description={value.description} publishedAt={value.pubDate} />
       ]
     })} />
   );

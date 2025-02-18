@@ -8,4 +8,5 @@ import {initializeApp} from "firebase-admin/app";
 import {gamesCzRssDownloadHandler} from "./GamesCzRssDownload";
 initializeApp();
 
-export const gamesCzRssDownload = onSchedule("every day 17:45 (Australia/Melbourne)", gamesCzRssDownloadHandler);
+// Scheduled for every day at 18:00 AEDT
+export const gamesCzRssDownload = onSchedule("every day 07:00", gamesCzRssDownloadHandler);
