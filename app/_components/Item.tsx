@@ -23,7 +23,7 @@ const actionAreaSx: SxProps = {
 };
 const imageSx: SxProps<Theme> = {
   height: 'auto',
-  backgroundColor: (theme) => theme.palette.grey[100],
+  backgroundColor: (theme) => theme.palette.grey[800],
 };
 
 export default function Item({
@@ -75,14 +75,14 @@ export default function Item({
   }
 
   return (
-    <Card variant="outlined" sx={rootSx}>
+    <Card variant="elevation" sx={rootSx}>
       <CardActionArea sx={actionAreaSx} onClick={handleOpen} onContextMenu={handleHideUnhide}>
         <CardMedia
           component="img"
           image={imageUrl}
           width={653}
           height={367}
-          alt="caption"
+          alt=""
           sx={imageSx}
         />
         <CardContent>
