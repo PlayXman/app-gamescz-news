@@ -1,5 +1,16 @@
-import React from 'react';
-import {Card, CardActionArea, CardContent, CardMedia, SxProps, Typography} from "@mui/material";
+import React, {useCallback, useMemo} from 'react';
+import {
+  Avatar,
+  Card,
+  CardActionArea, CardActionAreaProps,
+  CardContent,
+  CardHeader,
+  CardMedia,
+  SxProps,
+  Theme,
+  Typography
+} from "@mui/material";
+import {useReadItems} from "@/app/_components/ReadItemsProvider";
 
 const rootSx: SxProps = {
   height: '100%'
@@ -9,6 +20,10 @@ const actionAreaSx: SxProps = {
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'flex-start',
+};
+const imageSx: SxProps<Theme> = {
+  height: 'auto',
+  backgroundColor: (theme) => theme.palette.grey[100],
 };
 
 export default function Item({
@@ -24,19 +39,51 @@ export default function Item({
   description?: string;
   publishedAt?: string;
 }) {
-  const publishedAtDate = publishedAt ? new Date(publishedAt) : undefined;
+  const {hiddenPubDates, markItemAsRead} = useReadItems();
 
-  const handleClick = () => {
+  const publishedAtDate = useMemo(() => publishedAt ? new Date(publishedAt) : undefined, [publishedAt]);
+
+  const handleOpen = useCallback(() => {
     window.open(targetUrl, '_blank');
-    window.focus();
+    if (publishedAtDate) {
+      markItemAsRead(publishedAtDate);
+    }
+  }, [markItemAsRead, publishedAtDate, targetUrl]);
+
+  const handleHideUnhide = useCallback<NonNullable<CardActionAreaProps['onClick']>>((event) => {
+    event.preventDefault();
+    if (publishedAtDate) {
+      markItemAsRead(publishedAtDate);
+    }
+  }, [markItemAsRead, publishedAtDate]);
+
+  if(hiddenPubDates.has(publishedAtDate?.getTime() ?? -1)) {
+    return (
+      <Card variant="outlined">
+        <CardActionArea onClick={handleHideUnhide}>
+          <CardHeader
+            avatar={
+              <Avatar sx={{ bgcolor: 'success.main' }}>
+                ✔
+              </Avatar>
+            }
+            title={title}
+          />
+        </CardActionArea>
+      </Card>
+    );
   }
 
   return (
     <Card variant="outlined" sx={rootSx}>
-      <CardActionArea sx={actionAreaSx} onClick={handleClick}>
+      <CardActionArea sx={actionAreaSx} onClick={handleOpen} onContextMenu={handleHideUnhide}>
         <CardMedia
           component="img"
           image={imageUrl}
+          width={653}
+          height={367}
+          alt="caption"
+          sx={imageSx}
         />
         <CardContent>
           <Typography gutterBottom variant="body1">
@@ -49,7 +96,7 @@ export default function Item({
           )}
           {Boolean(publishedAtDate) && (
             <Typography variant="caption" sx={{color: 'text.secondary'}} component="p">
-              {publishedAtDate?.toLocaleString('cs-CZ')}
+              <em>{publishedAtDate?.toLocaleString('cs-CZ')}</em>
             </Typography>
           )}
         </CardContent>
