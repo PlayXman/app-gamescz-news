@@ -10,7 +10,7 @@ export default function ItemList({
   return (
     <Grid container spacing={2}>
       {items.length === 0 ? (
-        <Grid>
+        <Grid container size={{xs: 12}} justifyContent="center">
           <Typography>
             No items to display
           </Typography>
