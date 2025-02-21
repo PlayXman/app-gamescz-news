@@ -14,14 +14,14 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "GamesCZ News",
+  title: 'Games.cz News',
   robots: {
     index: false,
-  }
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: 'black',
+  themeColor: '#212121',
 }
 
 export default function RootLayout({
