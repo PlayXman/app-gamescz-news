@@ -3,9 +3,9 @@
   "short_name": "Games.cz News",
   "description": "News feed from Games.cz website",
   "start_url": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#121212",
-  "theme_color": "#212121",
+  "theme_color": "#282828",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
