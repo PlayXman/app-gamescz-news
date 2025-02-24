@@ -9,13 +9,15 @@ import {
 import {Suspense} from "react";
 import ItemLoader from "./_components/ItemLoader";
 import GamesCzItems from "./_components/GamesCzItems";
+import './styles.css';
 
 const rootSx: SxProps = {
   height: '100vh',
 };
 
 const mainSx: SxProps = {
-  py: 2
+  py: 2,
+  overflowX: "hidden",
 };
 
 export default function Page() {
