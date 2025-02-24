@@ -19,19 +19,17 @@ export default function Item({
   description?: string;
   publishedAt?: string;
 }) {
-  const {hiddenPubDates, markItemAsRead} = useReadItems();
+  const {hiddenItems, toggleItem} = useReadItems();
 
   const publishedAtDate = useMemo(() => publishedAt ? new Date(publishedAt) : undefined, [publishedAt]);
 
   const handleHideUnhide = useCallback<NonNullable<CardActionAreaProps['onClick']>>((event) => {
     event.preventDefault();
-    if (publishedAtDate) {
-      markItemAsRead(publishedAtDate);
-    }
-  }, [markItemAsRead, publishedAtDate]);
+    toggleItem(title);
+  }, [toggleItem, title]);
 
   // Read
-  if (hiddenPubDates.has(publishedAtDate?.getTime() ?? -1)) {
+  if (hiddenItems.has(title)) {
     return (
       <ReadItem title={title} onClick={handleHideUnhide}/>
     );

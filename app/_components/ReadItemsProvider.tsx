@@ -3,13 +3,13 @@ import {RssItem} from "@/functions/src/iGamesCzRss";
 
 const ReadItemsContext = createContext<{
   /**
-   * List of pubDates (timestamp) of items that are marked as read.
+   * List of titles of items that are marked as read.
    */
-  hiddenPubDates: Set<number>,
-  markItemAsRead: (pubDate: Date) => void;
+  hiddenItems: Set<string>,
+  toggleItem: (title: string) => void;
 }>({
-  hiddenPubDates: new Set(),
-  markItemAsRead: () => {},
+  hiddenItems: new Set(),
+  toggleItem: () => {},
 });
 
 /**
@@ -21,39 +21,36 @@ export function useReadItems() {
 
 // Reducer
 
-const localStorageKey = 'readItemPubDates';
+const localStorageKey = 'readItemTitles';
 
-function persistReducerState(state: Set<number>): void {
+function persistReducerState(state: Set<string>): void {
   localStorage.setItem(localStorageKey, JSON.stringify(Array.from(state)));
 }
 
-function reducer(state: Set<number>, action: {type: 'markItemAsRead', pubDate: Date} | {type: 'init', rssItems: RssItem[]}): Set<number> {
+function reducer(state: Set<string>, action: {type: 'toggle', title: string} | {type: 'init', rssItems: RssItem[]}): Set<string> {
   switch (action.type) {
     case "init": {
-      const oldestPubDateString = action.rssItems.at(-1)?.pubDate
-
-      if(oldestPubDateString == null) {
+      if(action.rssItems.length === 0) {
         return state;
       }
 
-      const oldestPubDate = new Date(oldestPubDateString).getTime();
-      const nextState = new Set<number>();
-      for(const presistedPubDate of Array.from(state)) {
-        if(presistedPubDate >= oldestPubDate) {
-          nextState.add(presistedPubDate);
+      const nextState = new Set<string>();
+      for(const rssItem of action.rssItems) {
+        if(rssItem.title && state.has(rssItem.title)) {
+          nextState.add(rssItem.title);
         }
       }
 
       persistReducerState(nextState);
       return nextState;
     }
-    case "markItemAsRead": {
-      const pubDate = action.pubDate.getTime();
+    case "toggle": {
+      const title = action.title;
       const nextState = new Set(state);
-      if (nextState.has(pubDate)) {
-        nextState.delete(pubDate);
+      if (nextState.has(title)) {
+        nextState.delete(title);
       } else {
-        nextState.add(pubDate);
+        nextState.add(title);
       }
 
       persistReducerState(nextState);
@@ -64,7 +61,7 @@ function reducer(state: Set<number>, action: {type: 'markItemAsRead', pubDate: D
   }
 }
 
-function reducerInit(): Set<number> {
+function reducerInit(): Set<string> {
   return new Set(JSON.parse(localStorage.getItem(localStorageKey) ?? '[]'));
 }
 
@@ -77,10 +74,10 @@ export default function ReadItemsProvider({
   children: ReactNode;
   rssItems: RssItem[] | undefined;
 }) {
-  const [hiddenPubDates, dispatch] = useReducer(reducer, null, reducerInit);
+  const [hiddenItems, dispatch] = useReducer(reducer, null, reducerInit);
 
-  const markItemAsRead = useCallback((pubDate: Date) => {
-    dispatch({type: 'markItemAsRead', pubDate});
+  const toggleItem = useCallback((title: string) => {
+    dispatch({type: 'toggle', title});
   }, []);
 
   useEffect(() => {
@@ -89,8 +86,8 @@ export default function ReadItemsProvider({
 
   return (
     <ReadItemsContext.Provider value={{
-      hiddenPubDates,
-      markItemAsRead
+      hiddenItems,
+      toggleItem
     }}>
       {children}
     </ReadItemsContext.Provider>
