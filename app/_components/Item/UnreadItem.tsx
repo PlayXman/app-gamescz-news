@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {
   Box,
   Card,
@@ -109,13 +109,13 @@ export default function UnreadItem({
   targetUrl: string | undefined;
   description?: string;
   publishedAt?: Date;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onHide: (event: any) => void;
 }) {
   const [isSwiping, setIsSwiping] = useState(false);
   const [animationProgress, setAnimationProgress] = useState(0);
   const [animationState, setAnimationState] = useState<Parameters<typeof animateCard>[1]>('animate');
   const [elementWidth, setElementWidth] = useState(0);
-  const [elementHeight, setElementHeight] = useState(0);
   const element = useRef<HTMLDivElement | null>(null);
 
   // Clock handler
@@ -127,15 +127,14 @@ export default function UnreadItem({
   // Swipe handlers
   const handleSwipeStart = useCallback<SwipeHandlersCallback<0>>(() => {
     setElementWidth(element.current?.offsetWidth ?? 0);
-    setElementHeight((element.current?.offsetHeight ?? 0) / 2);
     setAnimationState('animate');
     setAnimationProgress(0);
   }, []);
 
-  const handleSwipeProgress = useCallback<SwipeHandlersCallback<1>>((deltaX, deltaY, event) => {
+  const handleSwipeProgress = useCallback<SwipeHandlersCallback<1>>((deltaX, _deltaY, event) => {
     event.stopPropagation();
 
-    if(Math.abs(deltaY) < elementHeight && Math.abs(deltaX) > 20) {
+    if(Math.abs(deltaX) > 30) {
       // Prevent scrolling and animate
       setIsSwiping(true);
 
@@ -150,15 +149,15 @@ export default function UnreadItem({
       setIsSwiping(false);
       setAnimationProgress(0);
     }
-  }, [elementWidth, elementHeight]);
+  }, [elementWidth]);
 
   const handleSwipeEnd = useCallback<SwipeHandlersCallback<2>>((_deltaX, _deltaY, event) => {
-    if(Math.abs(animationProgress) > 0.5) {
+    if(Math.abs(animationProgress) > 0.4) {
       setAnimationState('finish');
       setTimeout(() => {
         setIsSwiping(false);
         onHide(event)
-      }, animationLength * 500);
+      }, animationLength * 600);
     } else {
       setIsSwiping(false);
       setAnimationState('reset');
@@ -166,15 +165,6 @@ export default function UnreadItem({
   }, [animationProgress, onHide]);
 
   const {swipeStartHandler, swipeMoveHandler, swipeEndHandler} = useSwipeHandlers(handleSwipeStart, handleSwipeProgress, handleSwipeEnd)
-
-  // Prevent scrolling when swiping
-  useEffect(() => {
-    if(isSwiping) {
-      document.body.classList.add('no-scroll');
-    } else {
-      document.body.classList.remove('no-scroll');
-    }
-  }, [isSwiping]);
 
   return (
     <Box sx={[rootSx, {'--index': isSwiping ? 1 : 0}]}>

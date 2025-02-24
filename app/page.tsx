@@ -9,7 +9,6 @@ import {
 import {Suspense} from "react";
 import ItemLoader from "./_components/ItemLoader";
 import GamesCzItems from "./_components/GamesCzItems";
-import './styles.css';
 
 const rootSx: SxProps = {
   height: '100vh',
