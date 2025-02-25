@@ -157,7 +157,7 @@ export default function UnreadItem({
       setTimeout(() => {
         setIsSwiping(false);
         onHide(event)
-      }, animationLength * 600);
+      }, animationLength * 800);
     } else {
       setIsSwiping(false);
       setAnimationState('reset');
