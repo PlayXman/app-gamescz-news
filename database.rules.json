@@ -1,0 +1,11 @@
+{
+  "rules": {
+    ".write": false,
+    "feedItems": {
+      ".read": true
+    },
+    "feedUpdatedAt": {
+      ".read": true
+    }
+  }
+}

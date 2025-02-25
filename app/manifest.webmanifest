@@ -1,0 +1,29 @@
+{
+  "name": "Games.cz News",
+  "short_name": "Games.cz News",
+  "description": "News feed from Games.cz website",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#121212",
+  "theme_color": "#282828",
+  "icons": [
+    {
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
