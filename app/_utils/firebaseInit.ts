@@ -11,8 +11,6 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_APP_ID,
 };
 
-console.log(firebaseConfig);
-
 initializeApp(firebaseConfig);
 
 // Connect database to emulator if running locally
