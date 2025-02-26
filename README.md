@@ -8,11 +8,11 @@
 1. Copy and rename `/.env.template` and fill it with your Firebase keys.
 2. Start emulators running
    ```shell
-   npm run emulators
+   npm run dev:emulators
    ```
 3. Start development server
    ```shell
-   npm run dev
+   npm run dev:app
    ```
 
 ### Build production ready project
