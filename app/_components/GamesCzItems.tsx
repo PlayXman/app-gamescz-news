@@ -2,7 +2,7 @@
 
 import React, {useEffect, useState} from 'react';
 import ItemList from "./ItemList";
-import fetchGamesCzItems from "../_utils/GamesCz";
+import {fetchGamesCzItems} from "../_utils/permanentStorage";
 import {RssItem} from "@/functions/src/iGamesCzRss";
 import Item from "@/app/_components/Item";
 import {Box, SxProps, Typography} from "@mui/material";

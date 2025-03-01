@@ -6,6 +6,11 @@
     },
     "feedUpdatedAt": {
       ".read": true
+    },
+    "notificationTokens": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ".value"
     }
   }
 }
