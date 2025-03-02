@@ -14,8 +14,7 @@ import {
   remove,
   query,
   equalTo,
-  orderByChild,
-  DataSnapshot, orderByValue
+  orderByValue
 } from "firebase/database";
 import {getMessaging, getToken, deleteToken} from "firebase/messaging";
 
