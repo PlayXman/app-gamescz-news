@@ -62,6 +62,7 @@ const actionAreaSx: SxProps = {
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'flex-start',
+  alignItems: 'stretch'
 };
 const imageSx: SxProps<Theme> = {
   height: 'auto',
