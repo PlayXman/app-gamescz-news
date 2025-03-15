@@ -13,10 +13,12 @@ import GamesCzItems from "./_components/GamesCzItems";
 const rootSx: SxProps = {
   height: '100vh',
 };
-
 const mainSx: SxProps = {
   py: 2,
   overflowX: "hidden",
+};
+const logoSx: SxProps = {
+  textDecoration: 'none',
 };
 
 export default function Page() {
@@ -24,9 +26,11 @@ export default function Page() {
     <Box sx={rootSx}>
       <AppBar position="fixed" color="default">
         <Toolbar variant="dense">
-          <Typography variant="h6" color="primary" component="div">
-            Games.cz News
-          </Typography>
+          <Box component="a" sx={logoSx} href="https://games.tiscali.cz/">
+            <Typography variant="h6" color="primary" component="div">
+              Games.cz News
+            </Typography>
+          </Box>
         </Toolbar>
       </AppBar>
       <Toolbar />
