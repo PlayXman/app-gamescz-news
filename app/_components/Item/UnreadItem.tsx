@@ -1,61 +1,43 @@
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {
   Box,
   Card,
   CardActionArea,
   CardActionAreaProps,
   CardContent,
-  CardMedia, Paper,
+  CardMedia,
   SxProps,
   Theme,
   Typography
 } from "@mui/material";
 import {SystemStyleObject} from "@mui/system";
-import {useSwipeHandlers} from "@/app/_components/Item/useSwipeHandlers";
+import {isTouchDevice} from "@/app/_utils/swipe";
 
-const animationLength = 0.4;
+const swipeableActiveClassName = 'swipe--active';
 
 const rootSx: SystemStyleObject = {
   height: '100%',
-  position: 'relative',
-  zIndex: 'var(--index, 0)',
 };
 const cardSx: SystemStyleObject = {
-  '@keyframes swipeRight': {
-    '0%': {
-      transform: 'translateX(0%)',
-      opacity: 1,
-    },
-    '20%': {
-      opacity: 1,
-    },
-    '100%': {
-      transform: 'translateX(100%)',
-      opacity: 0,
-    }
-  },
-  '@keyframes swipeLeft': {
-    '0%': {
-      transform: 'translateX(0%)',
-      opacity: 1,
-    },
-    '20%': {
-      opacity: 1,
-    },
-    '100%': {
-      transform: 'translateX(-100%)',
-      opacity: 0,
-    }
-  },
   height: '100%',
-  position: 'relative',
-  zIndex: 1,
-  animationDuration: `${animationLength}s`,
-  animationFillMode: 'forwards',
-  animationTimingFunction: 'linear',
-  animationPlayState: 'var(--animState, paused)',
-  animationDelay: 'var(--animDelay, 0s)',
-  animationDirection: 'var(--animDirection, normal)',
+
+  [`&.${swipeableActiveClassName}`]: {
+    display: 'flex',
+    overflow: 'scroll',
+    scrollSnapType: 'x mandatory',
+    scrollbarWidth: 'none',
+
+    '& > *, &:before, &:after': {
+      scrollSnapAlign: 'center',
+      scrollSnapStop: 'always',
+      minWidth: '100%',
+    },
+    '&:before, &:after': {
+      content: '""',
+      display: 'block',
+      bgcolor: 'error.main',
+    }
+  }
 };
 const actionAreaSx: SxProps = {
   height: '100%',
@@ -68,34 +50,6 @@ const imageSx: SxProps<Theme> = {
   height: 'auto',
   backgroundColor: (theme) => theme.palette.grey[800],
 };
-const swipeBackgroundSx: SxProps = {
-  bgcolor: 'error.main',
-  position: 'absolute',
-  top: 0,
-  bottom: 0,
-  left: 0,
-  right: 0,
-};
-
-function animateCard(progress: number, state: 'reset' | 'animate' | 'finish'): SystemStyleObject {
-  if(progress === 0) {
-    return null;
-  }
-
-  let animationProgress = animationLength * Math.abs(progress);
-  if(state === 'reset') {
-    animationProgress = animationLength - animationProgress;
-  }
-
-  return {
-    animationName: progress < 0 ? 'swipeLeft' : 'swipeRight',
-    '--animDelay': `-${animationProgress.toFixed(3)}s`,
-    '--animState': state === 'animate' ? 'paused' : 'running',
-    '--animDirection': state === 'reset' ? 'reverse' : 'normal',
-  };
-}
-
-type SwipeHandlersCallback<Index extends number> = NonNullable<Parameters<typeof useSwipeHandlers>[Index]>;
 
 export default function UnreadItem({
                                      title,
@@ -113,11 +67,7 @@ export default function UnreadItem({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onHide: (event: any) => void;
 }) {
-  const [isSwiping, setIsSwiping] = useState(false);
-  const [animationProgress, setAnimationProgress] = useState(0);
-  const [animationState, setAnimationState] = useState<Parameters<typeof animateCard>[1]>('animate');
-  const [elementWidth, setElementWidth] = useState(0);
-  const element = useRef<HTMLDivElement | null>(null);
+  const swipeableElement = useRef<HTMLDivElement | null>(null);
 
   // Clock handler
   const handleOpen = useCallback<NonNullable<CardActionAreaProps['onClick']>>((event) => {
@@ -125,63 +75,46 @@ export default function UnreadItem({
     onHide(event);
   }, [onHide, targetUrl]);
 
-  // Swipe handlers
-  const handleSwipeStart = useCallback<SwipeHandlersCallback<0>>(() => {
-    setElementWidth(element.current?.offsetWidth ?? 0);
-    setAnimationState('animate');
-    setAnimationProgress(0);
+  // Swipe handler
+  const handleSwipeEnd = useCallback<NonNullable<HTMLDivElement['onscrollend']>>((event) => {
+    const el = event.currentTarget as HTMLDivElement | null;
+
+    if(el == null) {
+      return;
+    }
+
+    const scrollX = el.scrollLeft;
+    const elWidth = el.offsetWidth;
+
+    if (scrollX === 0 || scrollX > elWidth) {
+      onHide(event);
+    }
+  }, [onHide]);
+
+  useEffect(() => {
+    if (swipeableElement.current != null && isTouchDevice()) {
+      const el = swipeableElement.current;
+      el.classList.add(swipeableActiveClassName);
+      el.scrollTo({left: el.offsetWidth, behavior: "instant"});
+    }
   }, []);
 
-  const handleSwipeProgress = useCallback<SwipeHandlersCallback<1>>((deltaX, _deltaY, event) => {
-    event.stopPropagation();
-
-    if(Math.abs(deltaX) > 30) {
-      // Prevent scrolling and animate
-      setIsSwiping(true);
-
-      let progress = deltaX / elementWidth;
-      if(Math.abs(progress) > 1) {
-        progress = progress < 0 ? -1 : 1;
-      }
-      setAnimationProgress(progress);
-      setAnimationState('animate');
-    } else {
-      // Allow scrolling, no animation
-      setIsSwiping(false);
-      setAnimationProgress(0);
-    }
-  }, [elementWidth]);
-
-  const handleSwipeEnd = useCallback<SwipeHandlersCallback<2>>((_deltaX, _deltaY, event) => {
-    if(Math.abs(animationProgress) > 0.4) {
-      setAnimationState('finish');
-      setTimeout(() => {
-        setIsSwiping(false);
-        onHide(event)
-      }, animationLength * 800);
-    } else {
-      setIsSwiping(false);
-      setAnimationState('reset');
-    }
-  }, [animationProgress, onHide]);
-
-  const {swipeStartHandler, swipeMoveHandler, swipeEndHandler} = useSwipeHandlers(handleSwipeStart, handleSwipeProgress, handleSwipeEnd)
-
   return (
-    <Box sx={[rootSx, {'--index': isSwiping ? 1 : 0}]}>
+    <Box
+      sx={rootSx}
+    >
+      {/* @ts-expect-error onScrollEnd is missing on Card but is propagated to underlying div element */}
       <Card
-        ref={element}
+        ref={swipeableElement}
         variant="elevation"
-        sx={[cardSx, animateCard(animationProgress, animationState)]}
-        elevation={isSwiping ? 8 : 1}
+        sx={cardSx}
+        elevation={1}
+        onScrollEnd={handleSwipeEnd}
       >
         <CardActionArea
           sx={actionAreaSx}
           onClick={handleOpen}
           onContextMenu={onHide}
-          onTouchStart={swipeStartHandler}
-          onTouchMove={swipeMoveHandler}
-          onTouchEnd={swipeEndHandler}
         >
           <CardMedia
             component="img"
@@ -208,8 +141,6 @@ export default function UnreadItem({
           </CardContent>
         </CardActionArea>
       </Card>
-
-      <Paper sx={swipeBackgroundSx} />
     </Box>
   );
 }
