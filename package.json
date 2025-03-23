@@ -7,7 +7,6 @@
     "dev:emulators": "firebase emulators:start",
     "lint": "next lint",
     "build": "next build",
-    "start": "next start",
     "deploy": "npm run build && firebase deploy"
   },
   "dependencies": {
