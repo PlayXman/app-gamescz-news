@@ -1,14 +1,25 @@
-import React, {createContext, ReactNode, useCallback, useContext, useEffect, useReducer} from 'react';
+"use client";
+
+import React, {createContext, ReactNode, useCallback, useContext, useEffect, useReducer, useState} from 'react';
 import {RssItem} from "@/functions/src/iGamesCzRss";
+import fetchGamesCzItems from "@/app/_utils/GamesCz";
 
 const ReadItemsContext = createContext<{
-  /**
-   * List of titles of items that are marked as read.
-   */
+  /** List of items from the latest RSS feed. */
+  items: RssItem[];
+  /** List of titles of items that are marked as read. */
   hiddenItems: Set<string>,
+  /** When was the RSS last updated. */
+  updatedAt: Date | undefined;
+  /** Are items being loaded? */
+  loading: boolean;
+  /** Hide/show item. */
   toggleItem: (title: string) => void;
 }>({
+  items: [],
   hiddenItems: new Set(),
+  updatedAt: undefined,
+  loading: true,
   toggleItem: () => {},
 });
 
@@ -69,11 +80,12 @@ function reducerInit(): Set<string> {
 
 export default function ReadItemsProvider({
                                             children,
-                                            rssItems,
                                           }: {
   children: ReactNode;
-  rssItems: RssItem[] | undefined;
 }) {
+  const [rssItems, setRssItems] = useState<RssItem[]>([]);
+  const [rssUpdatedAt, setRssUpdatedAt] = useState<Date | undefined>(undefined);
+  const [rssLoading, setRssLoading] = useState(true);
   const [hiddenItems, dispatch] = useReducer(reducer, null, reducerInit);
 
   const toggleItem = useCallback((title: string) => {
@@ -81,11 +93,26 @@ export default function ReadItemsProvider({
   }, []);
 
   useEffect(() => {
-    dispatch({type: 'init', rssItems: rssItems ?? []});
-  }, [rssItems]);
+    fetchGamesCzItems()
+      .then(result => {
+        const {items, updatedAt} = result;
+        setRssItems(items);
+        setRssUpdatedAt(updatedAt);
+        dispatch({type: 'init', rssItems: items});
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+      .finally(() => {
+        setRssLoading(false)
+      });
+  }, []);
 
   return (
     <ReadItemsContext.Provider value={{
+      items: rssItems,
+      loading: rssLoading,
+      updatedAt: rssUpdatedAt,
       hiddenItems,
       toggleItem
     }}>
