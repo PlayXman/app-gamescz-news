@@ -1,14 +1,25 @@
-import React, {createContext, ReactNode, useCallback, useContext, useEffect, useReducer} from 'react';
+"use client";
+
+import React, {createContext, ReactNode, useCallback, useContext, useEffect, useReducer, useState} from 'react';
 import {RssItem} from "@/functions/src/iGamesCzRss";
+import fetchGamesCzItems from "@/app/_utils/GamesCz";
 
 const ReadItemsContext = createContext<{
-  /**
-   * List of titles of items that are marked as read.
-   */
+  /** List of items from the latest RSS feed. */
+  items: RssItem[];
+  /** List of titles of items that are marked as read. */
   hiddenItems: Set<string>,
+  /** When was the RSS last updated. */
+  updatedAt: Date | undefined;
+  /** Are items being loaded? */
+  loading: boolean;
+  /** Hide/show item. */
   toggleItem: (title: string) => void;
 }>({
+  items: [],
   hiddenItems: new Set(),
+  updatedAt: undefined,
+  loading: true,
   toggleItem: () => {},
 });
 
@@ -27,16 +38,22 @@ function persistReducerState(state: Set<string>): void {
   localStorage.setItem(localStorageKey, JSON.stringify(Array.from(state)));
 }
 
+function loadPersistedReducerState(): Set<string> {
+  return new Set(JSON.parse(localStorage.getItem(localStorageKey) ?? '[]'));
+}
+
 function reducer(state: Set<string>, action: {type: 'toggle', title: string} | {type: 'init', rssItems: RssItem[]}): Set<string> {
   switch (action.type) {
     case "init": {
+      const persistedState = loadPersistedReducerState();
+
       if(action.rssItems.length === 0) {
-        return state;
+        return persistedState;
       }
 
       const nextState = new Set<string>();
       for(const rssItem of action.rssItems) {
-        if(rssItem.title && state.has(rssItem.title)) {
+        if(rssItem.title && persistedState.has(rssItem.title)) {
           nextState.add(rssItem.title);
         }
       }
@@ -61,31 +78,43 @@ function reducer(state: Set<string>, action: {type: 'toggle', title: string} | {
   }
 }
 
-function reducerInit(): Set<string> {
-  return new Set(JSON.parse(localStorage.getItem(localStorageKey) ?? '[]'));
-}
-
 // ! reducer
 
 export default function ReadItemsProvider({
                                             children,
-                                            rssItems,
                                           }: {
   children: ReactNode;
-  rssItems: RssItem[] | undefined;
 }) {
-  const [hiddenItems, dispatch] = useReducer(reducer, null, reducerInit);
+  const [rssItems, setRssItems] = useState<RssItem[]>([]);
+  const [rssUpdatedAt, setRssUpdatedAt] = useState<Date | undefined>(undefined);
+  const [rssLoading, setRssLoading] = useState(true);
+  const [hiddenItems, dispatch] = useReducer(reducer, null, () => new Set());
 
   const toggleItem = useCallback((title: string) => {
     dispatch({type: 'toggle', title});
   }, []);
 
   useEffect(() => {
-    dispatch({type: 'init', rssItems: rssItems ?? []});
-  }, [rssItems]);
+    fetchGamesCzItems()
+      .then(result => {
+        const {items, updatedAt} = result;
+        setRssItems(items);
+        setRssUpdatedAt(updatedAt);
+        dispatch({type: 'init', rssItems: items});
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+      .finally(() => {
+        setRssLoading(false)
+      });
+  }, []);
 
   return (
     <ReadItemsContext.Provider value={{
+      items: rssItems,
+      loading: rssLoading,
+      updatedAt: rssUpdatedAt,
       hiddenItems,
       toggleItem
     }}>
