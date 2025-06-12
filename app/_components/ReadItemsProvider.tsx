@@ -38,16 +38,22 @@ function persistReducerState(state: Set<string>): void {
   localStorage.setItem(localStorageKey, JSON.stringify(Array.from(state)));
 }
 
+function loadPersistedReducerState(): Set<string> {
+  return new Set(JSON.parse(localStorage.getItem(localStorageKey) ?? '[]'));
+}
+
 function reducer(state: Set<string>, action: {type: 'toggle', title: string} | {type: 'init', rssItems: RssItem[]}): Set<string> {
   switch (action.type) {
     case "init": {
+      const persistedState = loadPersistedReducerState();
+
       if(action.rssItems.length === 0) {
-        return state;
+        return persistedState;
       }
 
       const nextState = new Set<string>();
       for(const rssItem of action.rssItems) {
-        if(rssItem.title && state.has(rssItem.title)) {
+        if(rssItem.title && persistedState.has(rssItem.title)) {
           nextState.add(rssItem.title);
         }
       }
@@ -72,10 +78,6 @@ function reducer(state: Set<string>, action: {type: 'toggle', title: string} | {
   }
 }
 
-function reducerInit(): Set<string> {
-  return new Set(JSON.parse(localStorage.getItem(localStorageKey) ?? '[]'));
-}
-
 // ! reducer
 
 export default function ReadItemsProvider({
@@ -86,7 +88,7 @@ export default function ReadItemsProvider({
   const [rssItems, setRssItems] = useState<RssItem[]>([]);
   const [rssUpdatedAt, setRssUpdatedAt] = useState<Date | undefined>(undefined);
   const [rssLoading, setRssLoading] = useState(true);
-  const [hiddenItems, dispatch] = useReducer(reducer, null, reducerInit);
+  const [hiddenItems, dispatch] = useReducer(reducer, null, () => new Set());
 
   const toggleItem = useCallback((title: string) => {
     dispatch({type: 'toggle', title});

@@ -4,7 +4,8 @@ import { Roboto } from 'next/font/google';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './_utils/theme';
 import {ReactNode} from "react";
-import {CssBaseline} from "@mui/material";
+import {Box, CssBaseline, SxProps} from "@mui/material";
+import ReadItemsProvider from "@/app/_components/ReadItemsProvider";
 
 const roboto = Roboto({
   weight: ['300', '400', '500', '700'],
@@ -24,6 +25,10 @@ export const viewport: Viewport = {
   themeColor: '#282828',
 }
 
+const rootSx: SxProps = {
+  height: '100vh',
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -35,7 +40,11 @@ export default function RootLayout({
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            {children}
+            <Box sx={rootSx}>
+              <ReadItemsProvider>
+                {children}
+              </ReadItemsProvider>
+            </Box>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>
