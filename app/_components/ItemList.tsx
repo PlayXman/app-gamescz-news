@@ -1,4 +1,4 @@
-import {Grid2 as Grid, Typography} from '@mui/material';
+import {Grid, Typography} from '@mui/material';
 import React, {ReactNode} from 'react';
 
 export default function ItemList({
