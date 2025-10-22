@@ -14,7 +14,7 @@ export default async function fetchGamesCzItems(): Promise<{items: RssItem[]; up
   const feedUpgradedAt = await get(feedUpdatedAtRef);
 
   return {
-    items: feedItems.val(),
+    items: feedItems.val() ?? [],
     updatedAt: feedUpgradedAt.exists() ? new Date(feedUpgradedAt.val()) : undefined,
   }
 }
