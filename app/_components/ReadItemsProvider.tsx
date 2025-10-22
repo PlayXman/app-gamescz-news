@@ -1,6 +1,6 @@
 "use client";
 
-import React, {createContext, ReactNode, useCallback, useContext, useEffect, useReducer, useState} from 'react';
+import React, {createContext, ReactNode, useCallback, useContext, useEffect, useReducer, useRef, useState} from 'react';
 import {RssItem} from "@/functions/src/iGamesCzRss";
 import fetchGamesCzItems from "@/app/_utils/GamesCz";
 
@@ -88,19 +88,22 @@ export default function ReadItemsProvider({
   const [rssItems, setRssItems] = useState<RssItem[]>([]);
   const [rssUpdatedAt, setRssUpdatedAt] = useState<Date | undefined>(undefined);
   const [rssLoading, setRssLoading] = useState(true);
-  const [hiddenItems, dispatch] = useReducer(reducer, null, () => new Set());
+  const [hiddenItems, dispatchHiddenItems] = useReducer(reducer, null, () => new Set());
+  const interacted = useRef(false);
 
   const toggleItem = useCallback((title: string) => {
-    dispatch({type: 'toggle', title});
+    interacted.current = true;
+    dispatchHiddenItems({type: 'toggle', title});
   }, []);
 
+  // Load items.
   useEffect(() => {
     fetchGamesCzItems()
       .then(result => {
         const {items, updatedAt} = result;
         setRssItems(items);
         setRssUpdatedAt(updatedAt);
-        dispatch({type: 'init', rssItems: items});
+        dispatchHiddenItems({type: 'init', rssItems: items});
       })
       .catch((error) => {
         console.error(error);
@@ -109,6 +112,13 @@ export default function ReadItemsProvider({
         setRssLoading(false)
       });
   }, []);
+
+  // Auto-close window if all items are read.
+  useEffect(() => {
+    if(interacted.current && hiddenItems.size === rssItems.length) {
+      window.close();
+    }
+  }, [hiddenItems, rssItems]);
 
   return (
     <ReadItemsContext.Provider value={{
