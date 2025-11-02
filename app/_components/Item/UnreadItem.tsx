@@ -79,12 +79,12 @@ export default function UnreadItem({
   const handleSwipeEnd = useCallback<NonNullable<HTMLDivElement['onscrollend']>>((event) => {
     const el = event.currentTarget as HTMLDivElement | null;
 
-    if(el == null) {
+    if (el == null) {
       return;
     }
 
     const scrollX = el.scrollLeft;
-    const elWidth = el.offsetWidth;
+    const elWidth = el.offsetWidth + 20; // Add some tolerance. The element with can be with decimals which adds some inaccuracy.
 
     if (scrollX === 0 || scrollX > elWidth) {
       onHide(event);
